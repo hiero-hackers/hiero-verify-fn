@@ -1,0 +1,42 @@
+# cargo-deny supply-chain policy. Run: cargo deny check
+# CI runs it on every push. Advisories + licenses + bans + sources.
+# The dependency tree is hiero-streams (block-proofs) + axum/tokio, so
+# the advisory ignores below are inherited from hiero-streams' policy —
+# same crates, same justifications, kept in sync deliberately.
+
+[advisories]
+version = 2
+ignore = [
+    # RUSTSEC-2023-0071 — "Marvin Attack" timing sidechannel in `rsa`.
+    # Inherited via hiero-streams, which uses `rsa` exclusively to
+    # VERIFY v6 signatures with public keys; no private key ever exists
+    # in this process. Revisit if a patched `rsa` ships.
+    "RUSTSEC-2023-0071",
+    # RUSTSEC-2024-0436 — `paste` unmaintained (not a vulnerability);
+    # compile-time proc-macro transitively pulled by arkworks 0.4.
+    "RUSTSEC-2024-0436",
+    # RUSTSEC-2024-0388 — `derivative` unmaintained (not a
+    # vulnerability); same arkworks 0.4 transitive, compile-time only.
+    "RUSTSEC-2024-0388",
+]
+
+[licenses]
+version = 2
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "CDLA-Permissive-2.0",
+]
+
+[bans]
+multiple-versions = "warn"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

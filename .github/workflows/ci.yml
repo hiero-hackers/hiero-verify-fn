@@ -1,0 +1,89 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        name: Format, lint, build, smoke test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+                  path: hiero-verify-fn
+
+            # TODO(launch): delete this second checkout when Cargo.toml
+            # moves to the crates.io `hiero-streams` dependency — until
+            # then the path dep needs the sibling checkout CI-side too.
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+                  repository: hiero-hackers/hiero-streams-rs
+                  path: hiero-streams-rs
+
+            - name: Install protoc
+              run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+            - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+              with:
+                  components: rustfmt, clippy
+
+            - uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
+              with:
+                  workspaces: hiero-verify-fn
+
+            - working-directory: hiero-verify-fn
+              run: cargo fmt --check
+            - working-directory: hiero-verify-fn
+              run: cargo clippy --all-targets -- -D warnings
+            - working-directory: hiero-verify-fn
+              run: cargo build --release
+
+            # The contract, exercised for real: boot the function, POST the
+            # baked genesis block (self-bootstrapping), require valid:true —
+            # and require garbage to come back 400, never a crash.
+            - name: Smoke test
+              working-directory: hiero-verify-fn
+              run: |
+                  PORT=8080 ./target/release/hiero-verify-fn &
+                  SRV=$!
+                  for i in $(seq 100); do
+                      curl -sf http://127.0.0.1:8080/healthz >/dev/null 2>&1 && break
+                      sleep 0.1
+                  done
+                  body=$(curl -sf -X POST --data-binary @bootstrap/genesis-cn-0.73-tss.blk.gz http://127.0.0.1:8080/verify)
+                  echo "$body"
+                  echo "$body" | grep -q '"valid":true'
+                  code=$(curl -s -o /dev/null -w '%{http_code}' -X POST --data-binary garbage http://127.0.0.1:8080/verify)
+                  test "$code" = "400"
+                  kill $SRV
+
+    deny:
+        name: Supply chain (cargo-deny)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+                  path: hiero-verify-fn
+            # TODO(launch): delete with the path dep (see build job).
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+                  repository: hiero-hackers/hiero-streams-rs
+                  path: hiero-streams-rs
+            - uses: EmbarkStudios/cargo-deny-action@8a45e1c7c9a95dfae3276e89a553705e40ae45a2 # v2.0.20
+              with:
+                  command: check
+                  manifest-path: hiero-verify-fn/Cargo.toml

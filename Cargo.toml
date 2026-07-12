@@ -1,0 +1,23 @@
+[package]
+name = "hiero-verify-fn"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Hedera block-proof verification as a 128 MB-class serverless function, built on hiero-streams"
+publish = false # a deployable, not a library
+
+[dependencies]
+# TODO(launch): switch to `version = "0.1"` when hiero-streams-rs is on
+# crates.io (Tuesday); the path dep is for pre-publish development.
+hiero-streams = { path = "../hiero-streams-rs", default-features = false, features = ["block-proofs"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
+tokio = { version = "1", features = ["rt", "net", "macros"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"
+
+[profile.release]
+# Small binary is part of the point.
+strip = true
+lto = true
+codegen-units = 1

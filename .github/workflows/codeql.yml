@@ -1,0 +1,36 @@
+name: CodeQL
+
+# Static analysis (SAST) via CodeQL — Rust support is in public
+# preview; `build-mode: none` analyzes source directly (no protoc, no
+# sibling checkout needed).
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: "0 6 * * 3" # weekly, Wednesdays 06:00 UTC
+
+permissions:
+    contents: read
+
+jobs:
+    analyze:
+        name: Analyze (rust)
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            security-events: write
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - uses: github/codeql-action/init@e5d2f324924c57b6cabef9bdd7a1c85d62a89be2 # v3.37.0
+              with:
+                  languages: rust
+                  build-mode: none
+
+            - uses: github/codeql-action/analyze@e5d2f324924c57b6cabef9bdd7a1c85d62a89be2 # v3.37.0
+              with:
+                  category: "/language:rust"

@@ -1,0 +1,19 @@
+# Automated dependency updates — Scorecard's Dependency-Update-Tool
+# signal; also keeps the SHA-pinned actions current.
+version: 2
+updates:
+    - package-ecosystem: cargo
+      directory: "/"
+      schedule:
+          interval: weekly
+      open-pull-requests-limit: 5
+
+    - package-ecosystem: github-actions
+      directory: "/"
+      schedule:
+          interval: weekly
+
+    - package-ecosystem: docker
+      directory: "/"
+      schedule:
+          interval: weekly
