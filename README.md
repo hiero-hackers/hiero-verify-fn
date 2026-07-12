@@ -93,6 +93,17 @@ BOOTSTRAP_BLOCK=bootstrap/genesis-cn-0.73-tss.blk.gz PORT=8080 \
 
 ## Status
 
+**Mainnet is still pre-TSS** (checked 2026-07-12): live
+`block-preview/` blocks carry a 48-byte placeholder signature, not yet
+a TSS proof — POSTing one returns a `422` explaining exactly that.
+What this function cryptographically verifies today are HIP-1056 TSS
+proofs as produced by the consensus-node TSS test network (the same
+`CN_0_73_TSS_WRAPS` vectors `hiero-block-node` itself tests against,
+included under `bootstrap/`). The moment mainnet cuts over, real
+mainnet blocks verify here with **zero changes** — the format is the
+format. (The cutover is watched automatically by hiero-streams'
+sentinel and tripwires.)
+
 Built pre-publish against a path dependency; the Cargo.toml `TODO`
 flips it to the crates.io `hiero-streams` release, which also makes
 the Dockerfile self-contained. No tests of its own beyond the

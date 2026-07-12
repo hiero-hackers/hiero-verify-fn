@@ -89,6 +89,29 @@ async fn verify(
     // Ok(false)-vs-Err split the library holds crate-wide).
     let material =
         extract_proof_material(&body).map_err(|e| problem(StatusCode::BAD_REQUEST, e))?;
+
+    // Pre-TSS blocks (mainnet preview as of 2026-07: a 48-byte legacy
+    // placeholder, SHA-384 of the root) carry NO cryptographic proof —
+    // there is nothing to verify, which is different from failing.
+    // Teach that instead of erroring on an "unrecognized suffix".
+    if matches!(material.layout.path, hiero_streams::ProofPath::Unknown) {
+        let signature_bytes = material.layout.hints_verification_key.len()
+            + material.layout.hints_signature.len()
+            + material.layout.suffix.len();
+        return Err((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(Problem {
+                error: format!(
+                    "block {} carries a {signature_bytes}-byte pre-TSS placeholder \
+                     signature, not a TSS proof — this stream has not cut over to \
+                     HIP-1056 TSS proofs yet, so there is no cryptographic proof to \
+                     verify. This endpoint verifies it automatically once TSS lands.",
+                    material.block_number
+                ),
+            }),
+        ));
+    }
+
     let bootstrap = resolve_bootstrap(
         &material,
         app.genesis.as_deref(),
