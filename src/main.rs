@@ -21,7 +21,13 @@ use axum::{body::Bytes, Json, Router};
 use hiero_streams::{extract_proof_material, resolve_bootstrap, verify_block_proof};
 use serde::Serialize;
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
+use tower_http::catch_panic::CatchPanicLayer;
+use tower_http::timeout::TimeoutLayer;
+
+/// Per-request ceiling — a verify is ~40 ms, so this only fires on a
+/// pathological input. Cloud Run backstops at 300 s; this is the inner belt.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Blocks are single-digit MB today; leave headroom for GA-era blocks.
 const MAX_BODY: usize = 64 * 1024 * 1024;
@@ -65,6 +71,14 @@ async fn main() {
         .route("/healthz", get(|| async { "ok" }))
         .route("/verify", post(verify))
         .layer(DefaultBodyLimit::max(MAX_BODY))
+        .layer(TimeoutLayer::with_status_code(
+            StatusCode::REQUEST_TIMEOUT,
+            REQUEST_TIMEOUT,
+        ))
+        // Outermost, so it catches a panic from anywhere inside: the
+        // library is fuzzed not to panic, but a public endpoint should
+        // return a 500, never a dropped connection.
+        .layer(CatchPanicLayer::new())
         .with_state(app);
 
     let port: u16 = std::env::var("PORT")

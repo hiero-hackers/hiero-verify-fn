@@ -66,8 +66,16 @@ for liveness.
 
 ```sh
 gcloud run deploy hiero-verify-fn --source . \
-    --memory 128Mi --cpu 1 --allow-unauthenticated
+    --memory 128Mi --cpu 1 \
+    --concurrency 1 --max-instances 3 \
+    --allow-unauthenticated
 ```
+
+`--concurrency 1` matches the design: verification is CPU-bound (~40 ms of
+pairing crypto), so one request per instance is the natural fit — it also
+keeps `/healthz` responsive. `--max-instances 3` caps parallelism, so even
+under a flood the cost ceiling stays tiny and abuse gets throttled, not
+billed. Idle scales to zero.
 
 The image bakes a test-network genesis (`bootstrap/`) as the default
 `BOOTSTRAP_BLOCK`. To verify a different chain's blocks, replace it
