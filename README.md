@@ -36,6 +36,14 @@ deployment class is unavailable to it, which is the demo.
 
 ## API
 
+> **Live demo** — `https://hiero-verify-fn-809740676109.us-central1.run.app`
+> (Cloud Run, scale-to-zero, so the first request may cold-start ~1 s):
+> ```sh
+> curl https://hiero-verify-fn-809740676109.us-central1.run.app/health
+> curl -X POST --data-binary @bootstrap/genesis-cn-0.73-tss.blk.gz \
+>     https://hiero-verify-fn-809740676109.us-central1.run.app/verify
+> ```
+
 ```sh
 # genesis blocks carry their own ledger-ID publication
 curl -X POST --data-binary @0.blk.gz https://<fn>/verify
@@ -59,7 +67,7 @@ curl -X POST --data-binary @467.blk.gz https://<fn>/verify
 Semantics mirror the library's crate-wide convention: a proof that
 **fails** is a *successful* verification with `valid: false` (HTTP
 200); malformed input is `400`; a block whose bootstrap cannot be
-resolved is `422` with an error that names the fix. `GET /healthz`
+resolved is `422` with an error that names the fix. `GET /health`
 for liveness.
 
 ## Deploy (Cloud Run, 128 MiB)

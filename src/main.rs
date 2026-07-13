@@ -68,7 +68,21 @@ async fn main() {
     let app = Arc::new(App { genesis });
 
     let router = Router::new()
-        .route("/healthz", get(|| async { "ok" }))
+        // A human who pastes the bare URL into a browser does a GET /, which
+        // otherwise 404s (this is a JSON API, /verify is POST-only). Land them
+        // on a one-line usage note instead of a dead end.
+        .route(
+            "/",
+            get(|| async {
+                "hiero-verify-fn: POST a Hedera block file (.blk or .blk.gz) to /verify \
+                 for a cryptographic verification report. GET /health for liveness. \
+                 Source: https://github.com/hiero-hackers/hiero-verify-fn\n"
+            }),
+        )
+        // NB: "/health", not "/healthz" — Google Front End reserves the
+        // exact path "/healthz" and answers it at the edge with a 404, so a
+        // handler registered there is never reached on Cloud Run.
+        .route("/health", get(|| async { "ok" }))
         .route("/verify", post(verify))
         .layer(DefaultBodyLimit::max(MAX_BODY))
         .layer(TimeoutLayer::with_status_code(

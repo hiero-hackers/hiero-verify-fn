@@ -1,7 +1,10 @@
-# Build stage. protoc is for hiero-streams' generated protobuf modules.
+# Build stage. protoc compiles hiero-streams' vendored HAPI protos; those
+# import protobuf's well-known types (google/protobuf/wrappers.proto, ...),
+# which ship in libprotobuf-dev, not the protobuf-compiler package — both are
+# required or the build script fails with "wrappers.proto: File not found".
 # The crate comes from crates.io, so this build is self-contained.
 FROM rust:1.97-bookworm AS build
-RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler \
+RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY . .
