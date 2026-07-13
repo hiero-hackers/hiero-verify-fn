@@ -7,9 +7,7 @@ description = "Hedera block-proof verification as a 128 MB-class serverless func
 publish = false # a deployable, not a library
 
 [dependencies]
-# TODO(launch): switch to `version = "0.1"` when hiero-streams-rs is on
-# crates.io (Tuesday); the path dep is for pre-publish development.
-hiero-streams = { path = "../hiero-streams-rs", default-features = false, features = ["block-proofs"] }
+hiero-streams = { version = "0.1", default-features = false, features = ["block-proofs"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
 tokio = { version = "1", features = ["rt", "net", "macros"] }
 serde = { version = "1", features = ["derive"] }

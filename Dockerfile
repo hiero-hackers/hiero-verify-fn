@@ -1,7 +1,5 @@
 # Build stage. protoc is for hiero-streams' generated protobuf modules.
-# NOTE(launch): this Dockerfile assumes the crates.io `hiero-streams-rs`
-# dependency (Cargo.toml's TODO). Until then, build the binary locally
-# and test with `PORT=... BOOTSTRAP_BLOCK=... ./hiero-verify-fn`.
+# The crate comes from crates.io, so this build is self-contained.
 FROM rust:1.88-bookworm AS build
 RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*

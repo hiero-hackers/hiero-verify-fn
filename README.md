@@ -104,9 +104,8 @@ mainnet blocks verify here with **zero changes** — the format is the
 format. (The cutover is watched automatically by hiero-streams'
 sentinel and tripwires.)
 
-Built pre-publish against a path dependency; the Cargo.toml `TODO`
-flips it to the crates.io `hiero-streams` release, which also makes
-the Dockerfile self-contained. No tests of its own beyond the
+Built on the published [`hiero-streams`](https://crates.io/crates/hiero-streams)
+crate (`0.1`, `block-proofs` feature). No tests of its own beyond the
 library's — the crypto is differentially tested in hiero-streams
 (check-for-check against `hiero-block-verifier-js`); this repo is
 deliberately too thin to be wrong.

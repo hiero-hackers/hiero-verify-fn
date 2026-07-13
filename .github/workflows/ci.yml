@@ -21,16 +21,6 @@ jobs:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   persist-credentials: false
-                  path: hiero-verify-fn
-
-            # TODO(launch): delete this second checkout when Cargo.toml
-            # moves to the crates.io `hiero-streams` dependency — until
-            # then the path dep needs the sibling checkout CI-side too.
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-              with:
-                  persist-credentials: false
-                  repository: hiero-hackers/hiero-streams-rs
-                  path: hiero-streams-rs
 
             - name: Install protoc
               run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
@@ -40,21 +30,15 @@ jobs:
                   components: rustfmt, clippy
 
             - uses: Swatinem/rust-cache@f13886b937689c021905a6b90929199931d60db1 # v2.8.1
-              with:
-                  workspaces: hiero-verify-fn
 
-            - working-directory: hiero-verify-fn
-              run: cargo fmt --check
-            - working-directory: hiero-verify-fn
-              run: cargo clippy --all-targets -- -D warnings
-            - working-directory: hiero-verify-fn
-              run: cargo build --release
+            - run: cargo fmt --check
+            - run: cargo clippy --all-targets -- -D warnings
+            - run: cargo build --release
 
             # The contract, exercised for real: boot the function, POST the
             # baked genesis block (self-bootstrapping), require valid:true —
             # and require garbage to come back 400, never a crash.
             - name: Smoke test
-              working-directory: hiero-verify-fn
               run: |
                   PORT=8080 ./target/release/hiero-verify-fn &
                   SRV=$!
@@ -76,14 +60,6 @@ jobs:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   persist-credentials: false
-                  path: hiero-verify-fn
-            # TODO(launch): delete with the path dep (see build job).
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-              with:
-                  persist-credentials: false
-                  repository: hiero-hackers/hiero-streams-rs
-                  path: hiero-streams-rs
             - uses: EmbarkStudios/cargo-deny-action@8a45e1c7c9a95dfae3276e89a553705e40ae45a2 # v2.0.20
               with:
                   command: check
-                  manifest-path: hiero-verify-fn/Cargo.toml
