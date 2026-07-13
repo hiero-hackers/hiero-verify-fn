@@ -1,6 +1,6 @@
 # Build stage. protoc is for hiero-streams' generated protobuf modules.
 # The crate comes from crates.io, so this build is self-contained.
-FROM rust:1.88-bookworm AS build
+FROM rust:1.97-bookworm AS build
 RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
