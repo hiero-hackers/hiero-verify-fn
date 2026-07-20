@@ -5,7 +5,7 @@
 # The crate comes from crates.io, so this build is self-contained.
 # Base images are pinned by digest (Scorecard Pinned-Dependencies); the tag is
 # kept so Dependabot's docker updater refreshes both the tag and the digest.
-FROM rust:1.97-bookworm@sha256:7d0723df719e7f213b69dc7c8c595985c3f4b060cfbee4f7bc0e347a86fe3b6a AS build
+FROM rust:1.97-bookworm@sha256:77fac8b98f9f46062bb680b6d25d5bcaabfc400143952ebc572e924bcbedc3fa AS build
 RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
@@ -13,7 +13,7 @@ COPY . .
 RUN cargo build --release
 
 # Runtime: distroless, nothing but the 2 MB binary and the genesis block.
-FROM gcr.io/distroless/cc-debian12@sha256:a90cf0f046efb32466b38b0972fef3a95e7c580e392e79ff1b7ac08c15fed0bc
+FROM gcr.io/distroless/cc-debian12@sha256:7ee09f36862efbdbf70422db263e411c2618409ca46faa555bd5b636155307df
 COPY --from=build /src/target/release/hiero-verify-fn /hiero-verify-fn
 COPY bootstrap/genesis-cn-0.73-tss.blk.gz /genesis.blk.gz
 ENV BOOTSTRAP_BLOCK=/genesis.blk.gz
