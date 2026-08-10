@@ -525,9 +525,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hiero-streams"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f1e542dce11567bc0d1369bef34f8ce4bb833a2ba70e553ee6ded3adebff2fc"
+checksum = "ec9558efb8348580617c839ede3796459f79a61a8995008d0f7d901d6bc42820"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",

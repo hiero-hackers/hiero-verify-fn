@@ -7,7 +7,7 @@ description = "Hedera block-proof verification as a 128 MB-class serverless func
 repository = "https://github.com/hiero-hackers/hiero-verify-fn"
 
 [dependencies]
-hiero-streams = { version = "0.1", default-features = false, features = ["block-proofs"] }
+hiero-streams = { version = "0.3", default-features = false, features = ["block-proofs"] }
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
 tokio = { version = "1", features = ["rt", "net", "macros"] }
 # Public-endpoint hardening: catch a panic and return a clean 500 instead
